@@ -29,10 +29,22 @@ jobs:
           path: build/Release/NppXmlTree.dll
           if-no-files-found: error
 
-      # A tag is a release: the same DLL, attached to the version.
+      # Plugin Admin only accepts a zip, with the DLL at the root of the archive.
+      - name: Package the zip for Plugin Admin
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/Release/NppXmlTree.dll -DestinationPath build/NppXmlTree-x64.zip
+          Get-FileHash build/NppXmlTree-x64.zip -Algorithm SHA256 | ForEach-Object {
+            "SHA-256 $($_.Hash.ToLower())  NppXmlTree-x64.zip"
+          } | Write-Host
+
+      # A tag is a release: the DLL for a manual install, the zip for Plugin Admin.
       - name: Publish the release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
-          files: build/Release/NppXmlTree.dll
+          files: |
+            build/Release/NppXmlTree.dll
+            build/NppXmlTree-x64.zip
           generate_release_notes: true
