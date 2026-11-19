@@ -41,7 +41,14 @@ bool ScanJob::step(uint32_t budgetBytes)
     scanner_.setLimit(limit);
 
     ScanEvent ev;
-    while (scanner_.next(ev)) {
+    // A slice must always come back to the UI. One event per byte is already more than
+    // any document can produce, so this cap only fires if the scanner itself misbehaves
+    // (it once did: an empty attribute repeated forever and froze Notepad++). Better a
+    // slice that ends early than a window that stops answering.
+    const uint32_t maxEvents = (limit - from) + 4096;
+    uint32_t events = 0;
+    while (events < maxEvents && scanner_.next(ev)) {
+        ++events;
         switch (ev.type) {
         case ScanEvent::Type::ElementStart:
             index_.append(ev.start, ev.selfClosing ? ev.end : ev.start, ev.nameOff, ev.nameLen,
@@ -61,7 +68,9 @@ bool ScanJob::step(uint32_t budgetBytes)
     }
 
     if (scanner_.pos() > scanned_) scanned_ = scanner_.pos();
-    done_ = limit >= doc_.length;
+    // Done only if the slice really reached the end of the text: the cap above must not
+    // pass for a finished scan.
+    done_ = limit >= doc_.length && scanner_.pos() >= doc_.length;
     return done_;
 }
 

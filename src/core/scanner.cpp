@@ -119,6 +119,17 @@ bool XmlScanner::next(ScanEvent& ev)
                 ++i;
                 ++nameLen;
             }
+
+            // Nothing here looks like an attribute name. It happens for real: a tag
+            // whose '>' was deleted ends with " /" and the next '<', so the slash sits
+            // before the end of the tag with no '>' after it. Skipping the byte keeps
+            // the scan moving; without this the same empty attribute came back forever
+            // and Notepad++ froze on the file.
+            if (nameLen == 0) {
+                attrPos_ = nameOff + 1;
+                continue;
+            }
+
             uint32_t spanEnd = i;
             uint32_t valueOff = 0;
             uint32_t valueLen = 0;
@@ -152,7 +163,9 @@ bool XmlScanner::next(ScanEvent& ev)
             ev.valueOff = valueOff;
             ev.valueLen = valueLen;
             ev.depth = attrDepth_;
-            attrPos_ = i > j ? i : j;
+            // Always move: an attribute that parsed to nothing must not be served twice.
+            const uint32_t next = i > j ? i : j;
+            attrPos_ = next > nameOff ? next : nameOff + nameLen;
             return true;
         }
 
