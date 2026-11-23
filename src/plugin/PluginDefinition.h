@@ -23,7 +23,7 @@
 #define PLUGIN_MODULE_NAME L"XML Tree"
 // Docking.h requires the plugin's DLL file name here, not the display name.
 #define PLUGIN_DLL_NAME L"NppXmlTree.dll"
-#define PLUGIN_VERSION L"1.0.1"
+#define PLUGIN_VERSION L"1.1.0"
 #define PLUGIN_AUTHOR L"FalcoNefasto"
 
 extern NppData nppData;

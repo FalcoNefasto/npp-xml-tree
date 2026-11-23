@@ -35,20 +35,21 @@ index.
 
 ## Requirements
 
-- Notepad++ 8.x, **64-bit**, on Windows x64. The plugin is a single DLL with no
-  dependencies (static CRT).
-- Nothing else: no .NET, no runtime, no installer.
+- Notepad++ 8.x on Windows: **x64, x86 or ARM64**, the release ships all three.
+- Nothing else: a single DLL with no dependencies (static CRT), no .NET, no installer.
 
 ## Installation
 
-Grab `NppXmlTree.dll` from the [latest release](https://github.com/FalcoNefasto/npp-xml-tree/releases/latest),
-or build it yourself (see below). Then:
+Download the zip that matches your Notepad++ from the
+[latest release](https://github.com/FalcoNefasto/npp-xml-tree/releases/latest), or build it
+yourself (see below). Then:
 
 1. Close Notepad++.
-2. Create the folder `C:\Program Files\Notepad++\plugins\NppXmlTree\`
-   (administrator rights are needed to write there).
-3. Copy `NppXmlTree.dll` into that folder.
-4. Start Notepad++ and open the menu `Plugins > XML Tree`.
+2. Unzip `NppXmlTree.dll` into `C:\Program Files\Notepad++\plugins\NppXmlTree\`
+   (create the folder; administrator rights are needed there).
+3. Start Notepad++ and open the menu `Plugins > XML Tree`.
+
+Not sure which one to take? `? > About Notepad++` shows the architecture.
 
 ## Build
 
@@ -76,7 +77,7 @@ compiles against; those two projects are the reason this one is GPL-3.0.
 
 ## Limits
 
-- **x64 only**, and Windows only.
+- Windows and Notepad++ only (x64, x86 or ARM64).
 - The panel reads the buffer Notepad++ gives it, which is UTF-8: UTF-16 files work because
   Notepad++ decodes them, and a file that stays undecoded is refused rather than shown
   wrong.

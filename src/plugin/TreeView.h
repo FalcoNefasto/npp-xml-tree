@@ -66,19 +66,28 @@ public:
 
     static constexpr uint32_t kNone = 0xFFFFFFFFu;
 
-    // Item params are (kind << 56) | offset. Offset 0 is a legitimate value (a file
-    // that starts with '<root>'), so "no node here" needs its own bit rather than 0.
-    static constexpr LPARAM kHintBit = 1LL << 40;
+    // Item params are (kind << 30) | (hint << 29) | offset. Offset 0 is a legitimate
+    // value (a file that starts with '<root>'), so "no node here" needs its own bit
+    // rather than 0. Everything has to live inside a 32-bit LPARAM: the old layout used
+    // bit 56, which exists only on x64 and silently dropped the kind on x86. 29 bits of
+    // offset is 512 MB, well past the panel's 100 MB limit.
+    static constexpr LPARAM kOffsetMask = static_cast<LPARAM>((1u << 29) - 1);
+    static constexpr LPARAM kHintBit = static_cast<LPARAM>(1u << 29);
+    static constexpr int kKindShift = 30;
 
     static uint32_t offsetOf(LPARAM param)
     {
-        return (param & kHintBit) ? kNone : static_cast<uint32_t>(param & 0x00FFFFFFFFull);
+        return (param & kHintBit) ? kNone : static_cast<uint32_t>(param & kOffsetMask);
     }
     static bool isHint(LPARAM param) { return (param & kHintBit) != 0; }
-    static NodeKind kindOf(LPARAM param) { return static_cast<NodeKind>(param >> 56); }
+    static NodeKind kindOf(LPARAM param)
+    {
+        return static_cast<NodeKind>((param >> kKindShift) & 1);
+    }
     static LPARAM packNode(uint32_t offset, NodeKind kind)
     {
-        return static_cast<LPARAM>(offset) | (static_cast<LPARAM>(kind) << 56);
+        return static_cast<LPARAM>(static_cast<uint32_t>(offset) & kOffsetMask) |
+               static_cast<LPARAM>(static_cast<uint32_t>(kind) << kKindShift);
     }
 
 private:
